@@ -11,12 +11,16 @@ def robast_silverman_bandwidth(sample):
     std = np.std(sample)
     return 0.9 * min(std, iqr / 1.34) * n ** (-1/5)
 
-def gaussian_kde(x_grid, sample, h):
-    n = np.size(sample)
-    kde = np.zeros_like(x_grid)
-    for xi in sample:
-        kde += 1/np.sqrt(2 * np.pi) * np.exp(-((x_grid - xi)/h) ** 2 / 2)
+def gaussian_kde(x_grid, sample, h, m=None):
     
-    kde /=  n * h
+    n = np.size(sample)
+    if m is None or m > n:
+        m = n
+
+    kde = np.zeros_like(x_grid)
+    for xi in sample[:m]:
+        kde += 1/np.sqrt(2 * np.pi) * np.exp(-((x_grid - xi) / h) ** 2 / 2)
+
+    kde /= m * h
     return kde
 
