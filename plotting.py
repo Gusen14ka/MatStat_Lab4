@@ -31,7 +31,7 @@ def plot(sample, name):
         plt.bar(values, probs, alpha=0.67, edgecolor="black",
                 color="skyblue", label="Гистограмма")
 
-        teor_probs = st.poisson.pmf(values, 5)
+        teor_probs = st.poisson.pmf(values, 10)
         plt.vlines(values, 0, teor_probs, color="red", linewidth=3, label="Теория")
         plt.xlim(lim_low, lim_high)
 
@@ -74,16 +74,11 @@ def plot(sample, name):
     sample_sorted = np.sort(sample)
     y_all = np.arange(1, n + 1) / n
 
-    mask = (sample_sorted >= low) & (sample_sorted <= high)
-    x_inside = sample_sorted[mask]
-    y_inside = y_all[mask]
-
-    y_low = np.sum(sample_sorted <= low) / n
-    y_high = np.sum(sample_sorted <= high) / n
-
-    x_ecdf = np.concatenate(([low], x_inside, [high]))
-    y_ecdf = np.concatenate(([y_low], y_inside, [y_high]))
-
+    # Добавляем точки на границах, чтобы ЭФР визуально начиналась в 0 и заканчивалась в 1
+    ecdf_left = min(low, float(sample_sorted[0]))
+    ecdf_right = max(high, float(sample_sorted[-1]))
+    x_ecdf = np.concatenate(([ecdf_left], sample_sorted, [ecdf_right]))
+    y_ecdf = np.concatenate(([0], y_all, [1]))
     plt.step(x_ecdf, y_ecdf, color="blue", where="post", label="ЭФР")
 
     if name == "Poisson":
@@ -91,16 +86,18 @@ def plot(sample, name):
         counts = np.array([np.sum(sample == k) for k in values])
         probs = counts / n
         cum_probs = np.cumsum(probs)
-        plt.step(values, cum_probs, where="post", color="green", label="ЭФР (гист)")
+        x_hist = np.concatenate(([low], values, [high]))
+        y_hist = np.concatenate(([0], cum_probs, [1]))
+        plt.step(x_hist, y_hist, where="post", color="green", label="ЭФР (гист)")
     else:
         counts, bin_edges = np.histogram(sample, bins="fd", range=(low, high))
         probs = counts / n
         cum_probs = np.cumsum(probs)
-        x_hist = np.concatenate(([low], bin_edges[1:]))
-        y_hist = np.concatenate(([0], cum_probs))
+        x_hist = np.concatenate(([low], bin_edges[1:], [high]))
+        y_hist = np.concatenate(([0], cum_probs, [1]))
         plt.step(x_hist, y_hist, where="post", color="green", label="ЭФР (гист)")
 
-    plt.xlim(low, high)
+    #plt.xlim(low, high)
 
     # теоретическая функция распределения
     pdf_functions = {
@@ -108,10 +105,10 @@ def plot(sample, name):
         "Laplace": lambda x: st.laplace.cdf(x, 0, np.sqrt(1/2)),
         "Uniform": lambda x: st.uniform.cdf(x, -np.sqrt(3), 2*np.sqrt(3)),
         "Cauchy": lambda x: st.cauchy.cdf(x, 0, 1),
-        "Poisson": lambda x: st.poisson.cdf(x, 5)
+        "Poisson": lambda x: st.poisson.cdf(x, 10)
     }
 
-    x = np.linspace(low, high, 1000)
+    x = np.linspace(ecdf_left, ecdf_right, 1000)
     y = pdf_functions[name](x)
     plt.plot(x, y, color="red", label="Теория")
 

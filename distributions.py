@@ -11,7 +11,7 @@ def generate_laplace(n):
     return np.random.laplace(0, np.sqrt(1 / 2), n)
 
 def generate_poisson(n):
-    return np.random.poisson(5, n)
+    return np.random.poisson(10, n)
 
 def generate_uniform(n):
     return np.random.uniform(-np.sqrt(3), np.sqrt(3), n)
