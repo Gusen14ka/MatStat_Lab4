@@ -51,7 +51,7 @@ def plot(sample, name):
         plt.plot(x, y, color="red", label="Теория")
 
         kde_full = gaussian_kde(x, sample, h, m=n)
-        plt.plot(x, kde_full, label=f"Ядерная оценка (m={n})", color="purple")
+        plt.plot(x, kde_full, label=f"Ядерная оценка по робастному правилу Сильвермана (m={n})", color="purple")
         if n > 1:
             kde_half = gaussian_kde(x, sample, h, m=n // 2)
             plt.plot(x, kde_half, label=f"Ядерная оценка (m={n//2})",
@@ -67,6 +67,33 @@ def plot(sample, name):
     plt.xlabel("Значение случайной величины")
     plt.ylabel("Плотность вероятности")
     plt.legend()
+
+        
+    if name == "Cauchy":
+        plt.figure()
+        plt.grid()
+        x = np.linspace(low, high, 1000)
+        plt.hist(sample, bins="fd", range=(low, high), density=True,
+                 alpha=0.67, edgecolor="black", color="skyblue", label="Генерация")
+        
+        y = st.cauchy.pdf(x, 0, 1)
+
+        plt.plot(x, y, color="red", label="Теория")
+
+        kde_full = gaussian_kde(x, sample, silverman_bandwidth(sample), m=n)
+        plt.plot(x, kde_full, label=f"Ядерная оценка по правилу Сильвермана", color="purple")
+
+        kde_full = gaussian_kde(x, sample, robast_silverman_bandwidth(sample), m=n)
+        plt.plot(x, kde_full, label=f"Ядерная оценка по робастному правилу Сильвермана", color="green")
+
+        plt.xlim(lim_low, lim_high)
+
+        plt.title(f"Распределение {name}, n={n}")
+        plt.xlabel("Значение случайной величины")
+        plt.ylabel("Плотность вероятности")
+        plt.legend()
+
+
 
     # ЭФР и сравнение с теорией (ограничено строго [low,high])
     plt.figure()
